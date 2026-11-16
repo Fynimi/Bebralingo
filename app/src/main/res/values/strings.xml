@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Bebralingo</string>
+
+    <!-- Нижняя навигация -->
+    <string name="nav_map">Путь</string>
+    <string name="nav_sprints">Спринты</string>
+    <string name="nav_guide">Гайд</string>
+
+    <!-- Карта уроков -->
+    <string name="map_start">НАЧАТЬ</string>
+    <string name="map_continue">ПРОДОЛЖИТЬ</string>
+    <string name="map_repeat">ПОВТОРИТЬ</string>
+
+    <!-- Тренировка -->
+    <string name="training_close">Закрыть урок</string>
+    <string name="training_lesson_done">Урок пройден!</string>
+    <string name="training_continue">Продолжить</string>
+
+    <!-- Спринты -->
+    <string name="sprints_title">Спринты</string>
+    <string name="sprints_subtitle">Испытания на скорость</string>
+    <string name="sprints_ready">Начать спринт</string>
+    <string name="sprints_again">Ещё раз</string>
+    <string name="sprints_done">Готово</string>
+
+    <!-- Гайд -->
+    <string name="guide_title">Гайд по слепой печати</string>
+</resources>

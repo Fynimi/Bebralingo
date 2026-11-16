@@ -1,0 +1,26 @@
+# Gradle
+.gradle/
+build/
+app/build/
+captures/
+.cxx/
+.externalNativeBuild/
+
+# Kotlin
+.kotlin/
+
+# Локальные настройки SDK
+local.properties
+
+# Android Studio / IDEA
+.idea/
+*.iml
+
+# Прочее
+.DS_Store
+.gigatool/
+
+# Ключи подписи
+*.jks
+*.keystore
+keystore.properties
