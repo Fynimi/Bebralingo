@@ -24,3 +24,7 @@ local.properties
 *.jks
 *.keystore
 keystore.properties
+
+# Презентация и скриншоты
+/openslide/
+/screenshots/

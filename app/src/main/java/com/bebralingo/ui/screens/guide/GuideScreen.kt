@@ -70,7 +70,7 @@ fun GuideScreen(
             Text(
                 text = "Как быстро и уверенно печатать на экране телефона",
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(Dim.gapLarge))
@@ -83,7 +83,7 @@ fun GuideScreen(
                 text = "Цвет показывает, каким большим пальцем удобнее нажимать клавишу:",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = TextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(Dim.gapSmall))
             ThumbLegend()
@@ -124,7 +124,7 @@ private fun SectionTitle(text: String) {
         text = text,
         style = MaterialTheme.typography.titleLarge,
         fontWeight = FontWeight.Bold,
-        color = TextPrimary,
+        color = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier.padding(bottom = Dim.gapSmall)
     )
 }
@@ -204,7 +204,7 @@ private fun ThumbLegend() {
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -298,12 +298,12 @@ private fun PostureRules() {
                     text = rule,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = hint,
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Spacer(modifier = Modifier.height(6.dp))
