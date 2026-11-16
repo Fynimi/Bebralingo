@@ -14,18 +14,18 @@ object LessonContent {
         LessonBlock(
             id = "b1",
             title = "Основной ряд",
-            description = "ФЫВА ОЛДЖ — домашняя позиция пальцев",
+            description = "ФЫВА ОЛДЖ — базовые клавиши",
             accent = Color(0xFF58CC02),
             lessons = listOf(
                 Lesson(
                     id = "b1l1", blockId = "b1",
-                    title = "А и О", subtitle = "Клавиши с насечками",
+                    title = "А и О", subtitle = "Частые гласные",
                     targetText = "ао аоао оа оаоа аоаоао",
                     focusKeys = "ао"
                 ),
                 Lesson(
                     id = "b1l2", blockId = "b1",
-                    title = "Ф и Ж", subtitle = "Мизинцы",
+                    title = "Ф и Ж", subtitle = "Крайние клавиши",
                     targetText = "аф жа оф фа жаж жаф афа",
                     focusKeys = "аофж"
                 ),
@@ -57,13 +57,13 @@ object LessonContent {
             lessons = listOf(
                 Lesson(
                     id = "b2l1", blockId = "b2",
-                    title = "Й Ц У К", subtitle = "Левая рука",
+                    title = "Й Ц У К", subtitle = "Левая половина",
                     targetText = "йку цук йук кцы ууц ккуй",
                     focusKeys = "йцу"
                 ),
                 Lesson(
                     id = "b2l2", blockId = "b2",
-                    title = "Е Н Г Ш", subtitle = "Указательные",
+                    title = "Е Н Г Ш", subtitle = "Центр ряда",
                     targetText = "еген шег нге шеен ггне",
                     focusKeys = "енгш"
                 ),
@@ -75,7 +75,7 @@ object LessonContent {
                 ),
                 Lesson(
                     id = "b2l4", blockId = "b2",
-                    title = "Слова верхнего ряда", subtitle = "Ряд + домашняя позиция",
+                    title = "Слова верхнего ряда", subtitle = "Верхний ряд + основной",
                     targetText = "щека укол кран река ранг чек",
                     focusKeys = "йцукенгшщзхъ"
                 ),
@@ -95,13 +95,13 @@ object LessonContent {
             lessons = listOf(
                 Lesson(
                     id = "b3l1", blockId = "b3",
-                    title = "Я Ч С М", subtitle = "Левая рука",
+                    title = "Я Ч С М", subtitle = "Левая половина",
                     targetText = "ямч смя чья ммс ячс мяч",
                     focusKeys = "ячсм"
                 ),
                 Lesson(
                     id = "b3l2", blockId = "b3",
-                    title = "И Т Ь Б Ю", subtitle = "Правая рука",
+                    title = "И Т Ь Б Ю", subtitle = "Правая половина",
                     targetText = "ить ють бить тибь ююб тить",
                     focusKeys = "итьбю"
                 ),

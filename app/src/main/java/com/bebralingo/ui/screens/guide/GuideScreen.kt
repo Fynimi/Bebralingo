@@ -8,7 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,13 +18,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.bebralingo.ui.components.*
+import androidx.compose.ui.unit.sp
+import com.bebralingo.ui.components.GuideKey
+import com.bebralingo.ui.components.MobileKeyboard
+import com.bebralingo.ui.components.ThumbZone
 import com.bebralingo.ui.theme.*
 import com.bebralingo.ui.theme.Dim
 
 /**
- * Экран «Гайд по слепой печати» — памятка с раскладкой клавиатуры,
- * цветовой кодировкой пальцев, правилами посадки и советами.
+ * Экран «Гайд» — памятка по быстрой печати на телефоне.
+ *
+ * Материал ориентирован на сенсорную клавиатуру: зоны больших пальцев,
+ * хват телефона, настройки клавиатуры и режим тренировок.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,89 +60,57 @@ fun GuideScreen(
         ) {
             Spacer(modifier = Modifier.height(Dim.gapLarge))
 
-            // Заголовок
             Text(
-                text = "🖱 Слепая печать за 30 дней",
+                text = "📱 Печать двумя большими пальцами",
                 style = MaterialTheme.typography.displayMedium,
-                color = Green,
-                fontWeight = FontWeight.Bold
+                color = Blue,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
             )
             Text(
-                text = "Ваш путеводитель к скорости и уверенности",
+                text = "Как быстро и уверенно печатать на экране телефона",
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextSecondary,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(Dim.gapLarge))
 
-            // 1. Раскладка клавиатуры
-            Text(
-                text = "1. Раскладка и зоны пальцев",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimary
-            )
+            SectionTitle("1. Клавиатура и зоны пальцев")
+            PhoneKeyboardGuide()
+
             Spacer(modifier = Modifier.height(Dim.gapSmall))
-
-            KeyboardGuide()
-
-            Spacer(modifier = Modifier.height(Dim.gapLarge))
-
-            // Легенда
             Text(
-                text = "Каждый цвет — свой палец:",
+                text = "Цвет показывает, каким большим пальцем удобнее нажимать клавишу:",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.height(Dim.gapSmall))
-            FingerLegend()
-
-            Spacer(modifier = Modifier.height(Dim.gapLarge))
-
-            // 2. Домашняя позиция
-            Text(
-                text = "2. Домашняя позиция",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 color = TextPrimary
             )
             Spacer(modifier = Modifier.height(Dim.gapSmall))
-            HomePositionCard()
+            ThumbLegend()
 
             Spacer(modifier = Modifier.height(Dim.gapLarge))
 
-            // 3. Правила посадки
-            Text(
-                text = "3. Правила посадки и работы",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimary
-            )
-            Spacer(modifier = Modifier.height(Dim.gapSmall))
+            SectionTitle("2. Как держать телефон")
+            GripCard()
+
+            Spacer(modifier = Modifier.height(Dim.gapLarge))
+
+            SectionTitle("3. Посадка и осанка")
             PostureRules()
 
             Spacer(modifier = Modifier.height(Dim.gapLarge))
 
-            // 4. Советы
-            Text(
-                text = "4. Как не смотреть на клавиатуру",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimary
-            )
-            Spacer(modifier = Modifier.height(Dim.gapSmall))
+            SectionTitle("4. Настройки клавиатуры")
+            SettingsCard()
+
+            Spacer(modifier = Modifier.height(Dim.gapLarge))
+
+            SectionTitle("5. Как не смотреть на клавиши")
             TipsCard()
 
             Spacer(modifier = Modifier.height(Dim.gapLarge))
 
-            // 5. Как тренироваться
-            Text(
-                text = "5. Как тренироваться",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimary
-            )
-            Spacer(modifier = Modifier.height(Dim.gapSmall))
+            SectionTitle("6. Как тренироваться")
             TrainingAdviceCard()
 
             Spacer(modifier = Modifier.height(100.dp))
@@ -145,13 +118,23 @@ fun GuideScreen(
     }
 }
 
+@Composable
+private fun SectionTitle(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold,
+        color = TextPrimary,
+        modifier = Modifier.padding(bottom = Dim.gapSmall)
+    )
+}
+
 /**
- * Полная раскладка клавиатуры ЙЦУКЕН с цветовой кодировкой зон.
+ * Схема экранной клавиатуры: три буквенных ряда и служебный нижний ряд.
+ * Клавиши окрашены по зоне большого пальца.
  */
 @Composable
-private fun KeyboardGuide() {
-    val rows = FingerMap.rows
-
+private fun PhoneKeyboardGuide() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -164,25 +147,28 @@ private fun KeyboardGuide() {
                 .padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            rows.forEachIndexed { rowIdx, row ->
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    row.forEach { key ->
-                        val zone = if (key.length == 1) FingerMap.getZone(key[0]) else FingerZone.None
-
-                        val isHome = key.length == 1 && key in FingerMap.homeRowKeys
-
+            MobileKeyboard.letterRows.forEach { row ->
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    row.forEachIndexed { index, char ->
                         GuideKey(
-                            letter = key,
-                            zone = zone,
-                            isHomeRowKey = isHome,
+                            letter = char.toString(),
+                            zone = MobileKeyboard.zoneOf(index, row.length),
                             modifier = Modifier.padding(2.dp)
                         )
                     }
                 }
-                if (rowIdx < rows.size - 1) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                MobileKeyboard.bottomRow.forEach { key ->
+                    GuideKey(
+                        letter = key,
+                        zone = MobileKeyboard.bottomZone(key),
+                        minWidth = if (key == "пробел") 120.dp else 56.dp,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(2.dp)
+                    )
                 }
             }
         }
@@ -190,21 +176,14 @@ private fun KeyboardGuide() {
 }
 
 /**
- * Цветовая легенда для пальцев.
+ * Легенда зон больших пальцев.
  */
 @Composable
-private fun FingerLegend() {
+private fun ThumbLegend() {
     val legend = listOf(
-        FingerZone.LeftPinky to "Левый мизинец",
-        FingerZone.LeftRing to "Левый безымянный",
-        FingerZone.LeftMiddle to "Левый средний",
-        FingerZone.LeftIndex to "Левый указательный",
-        FingerZone.RightIndex to "Правый указательный",
-        FingerZone.RightMiddle to "Правый средний",
-        FingerZone.RightRing to "Правый безымянный",
-        FingerZone.RightPinky to "Правый мизинец",
-        FingerZone.Thumb to "Большие пальцы (пробел)",
-        FingerZone.None to "Модификаторы (Shift, Tab...)"
+        ThumbZone.Left to "Левый большой палец — левая половина",
+        ThumbZone.Right to "Правый большой палец — правая половина",
+        ThumbZone.Both to "Пробел — удобным пальцем"
     )
 
     legend.forEach { (zone, label) ->
@@ -212,14 +191,13 @@ private fun FingerLegend() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 2.dp),
-            horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
                     .size(24.dp)
                     .clip(RoundedCornerShape(6.dp))
-                    .background(zone.color.copy(0.3f))
+                    .background(zone.color.copy(alpha = 0.3f))
                     .border(1.5.dp, zone.color, RoundedCornerShape(6.dp))
             )
             Spacer(modifier = Modifier.width(8.dp))
@@ -233,83 +211,80 @@ private fun FingerLegend() {
 }
 
 /**
- * Карточка домашней позиции с визуализацией клавиш А и О.
+ * Карточка правильного хвата телефона.
  */
 @Composable
-private fun HomePositionCard() {
+private fun GripCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(Dim.cornerMedium),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF0FFF0))
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F4FF))
     ) {
         Column(modifier = Modifier.padding(Dim.paddingMedium)) {
             Text(
-                text = "🏠 Домашняя позиция",
+                text = "🤲 Две руки, два больших пальца",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = Green
+                color = Blue
             )
             Spacer(modifier = Modifier.height(Dim.gapSmall))
 
-            Text(
-                text = "Левая рука resting на: Ф Ы В А",
-                style = MaterialTheme.typography.bodyMedium
+            val rules = listOf(
+                "Держите телефон двумя руками, а не одной",
+                "Большие пальцы — над нижним рядом клавиш",
+                "Каждый палец работает на своей половине экрана",
+                "Пробел нажимайте удобным пальцем, не перекладывая телефон",
+                "В горизонтальной ориентации печатать удобнее и быстрее"
             )
-            Text(
-                text = "Правая рука resting на: О Л Д Ж",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(modifier = Modifier.height(Dim.gapSmall))
 
-            // Визуализация домашней позиции
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                // Левая рука
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Левая", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
-                    Row {
-                        GuideKey("ф", FingerZone.LeftPinky)
-                        GuideKey("ы", FingerZone.LeftRing)
-                        GuideKey("в", FingerZone.LeftMiddle)
-                        GuideKey("а", FingerZone.LeftIndex)
-                    }
-                }
-                // Правая рука
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Правая", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
-                    Row {
-                        GuideKey("о", FingerZone.RightIndex)
-                        GuideKey("л", FingerZone.RightMiddle)
-                        GuideKey("д", FingerZone.RightRing)
-                        GuideKey("ж", FingerZone.RightPinky)
-                    }
-                }
+            rules.forEach { rule ->
+                Text(
+                    text = "• $rule",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextPrimary,
+                    modifier = Modifier.padding(vertical = 2.dp)
+                )
             }
 
-            Spacer(modifier = Modifier.height(Dim.gapSmall))
+            Spacer(modifier = Modifier.height(Dim.gapMedium))
 
-            Text(
-                text = "🔍 Клавиши А и О имеют насечки — нащупайте их пальцами!",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Orange,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                GuideKey(
+                    letter = "левый",
+                    zone = ThumbZone.Left,
+                    minWidth = 88.dp,
+                    fontSize = 13.sp
+                )
+                GuideKey(
+                    letter = "пробел",
+                    zone = ThumbZone.Both,
+                    minWidth = 88.dp,
+                    fontSize = 13.sp
+                )
+                GuideKey(
+                    letter = "правый",
+                    zone = ThumbZone.Right,
+                    minWidth = 88.dp,
+                    fontSize = 13.sp
+                )
+            }
         }
     }
 }
 
 /**
- * Правила посадки за клавиатурой.
+ * Правила посадки при печати на телефоне.
  */
 @Composable
 private fun PostureRules() {
     val rules = listOf(
-        "🪑 Сидите прямо, ступни на полу, экран на уровне глаз" to "Правильная осанка — залог быстрой печати без боли в спине",
-        "👀 Не смотрите на клавиатуру! Смотрите на экран" to "Заклейте клавиатуру прозрачной плёнкой, чтобы не соблазниться",
-        "🖐 Пальцы согнуты, как будто держите апельсин" to "Нажимайте клавиши кончиками пальцев, а не плоскими пальцами",
-        "🔄 Ошибки — это нормально. Скорость придёт с практикой" to "Не торопитесь: точность важнее скорости на первых этапах"
+        "📏 Экран в 25–30 см от глаз" to "Держите телефон на уровне груди и не наклоняйте голову вниз",
+        "🪑 Спина прямая, плечи расслаблены" to "Локти прижаты к телу — так большие пальцы меньше устают",
+        "🚶 Не печатайте на ходу и лёжа" to "В тряске и неудобной позе промахов заметно больше",
+        "⏱ Пауза каждые 15–20 минут" to "Разомните кисти и большие пальцы, посмотрите вдаль"
     )
 
     rules.forEach { (rule, hint) ->
@@ -337,10 +312,10 @@ private fun PostureRules() {
 }
 
 /**
- * Советы, как перестать смотреть на клавиатуру.
+ * Настройки клавиатуры, которые мешают научиться печатать.
  */
 @Composable
-private fun TipsCard() {
+private fun SettingsCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(Dim.cornerMedium),
@@ -348,27 +323,70 @@ private fun TipsCard() {
     ) {
         Column(modifier = Modifier.padding(Dim.paddingMedium)) {
             Text(
-                text = "💡 5 способов не смотреть на клавиатуру",
+                text = "⚙️ Что выключить в клавиатуре",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = Orange
             )
             Spacer(modifier = Modifier.height(Dim.gapSmall))
 
-            val tips = listOf(
-                "Положите руки на домашнюю позицию и закройте глаза на 5 секунд — запомните положение",
-                "Наклейте стикер с домашним рядом (ФЫВА ОЛДЖ) прямо на клавиатуру",
-                "Тренируйтесь печатать заметки в блокноте — без Ctrl+Z, без возврата",
-                "Используйте антистресс или мячик в руке, чтобы расслабить пальцы между подходами",
-                "Заклейте клавиатуру прозрачным скотчем — так вы не увидите букв и не захотите смотреть"
+            val settings = listOf(
+                "Автозамена и подсказки — они исправляют ошибки за вас, и вы их не замечаете",
+                "Свайп-ввод — тренируем нажатия, а не свайпы",
+                "Автозаглавные буквы и автопробел — пусть их ставите вы",
+                "Сложные темы и анимации — простая раскладка читается быстрее"
             )
 
-            tips.forEachIndexed { idx, tip ->
-                Row(
-                    modifier = Modifier.padding(vertical = 3.dp)
-                ) {
+            settings.forEachIndexed { index, item ->
+                Row(modifier = Modifier.padding(vertical = 3.dp)) {
                     Text(
-                        text = "${idx + 1}. ",
+                        text = "${index + 1}. ",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Orange
+                    )
+                    Text(
+                        text = item,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextPrimary
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Советы, как перестать смотреть на клавиши.
+ */
+@Composable
+private fun TipsCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(Dim.cornerMedium),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF0FFF0))
+    ) {
+        Column(modifier = Modifier.padding(Dim.paddingMedium)) {
+            Text(
+                text = "👀 5 способов не смотреть на клавиши",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = Green
+            )
+            Spacer(modifier = Modifier.height(Dim.gapSmall))
+
+            val tips = listOf(
+                "Смотрите на строку с текстом задания, а не на клавиатуру под ней",
+                "Печатайте короткие слова целиком, не проверяя каждую букву",
+                "Ошибку исправляйте, не глядя на клавиши — ориентируйтесь по памяти",
+                "Держите телефон устойчиво: от дрожания рук появляются лишние промахи",
+                "Переписывайте свои заметки в тренажёре, а не в мессенджере"
+            )
+
+            tips.forEachIndexed { index, tip ->
+                Row(modifier = Modifier.padding(vertical = 3.dp)) {
+                    Text(
+                        text = "${index + 1}. ",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
                         color = Green
@@ -385,7 +403,7 @@ private fun TipsCard() {
 }
 
 /**
- * Советы по тренировкам.
+ * Советы по тренировкам на телефоне.
  */
 @Composable
 private fun TrainingAdviceCard() {
@@ -404,18 +422,16 @@ private fun TrainingAdviceCard() {
             Spacer(modifier = Modifier.height(Dim.gapSmall))
 
             val advice = listOf(
-                "Начните с блока 1 (ФЫВА ОЛДЖ) и проходите уроки по порядку",
-                "Не переходите к следующему уроку, пока не наберёте 80% точности",
-                "Тренируйтесь по 15–20 минут в день — лучше чаще, но меньше",
-                "Используйте спринты для развития скорости после освоения клавиш",
-                "Повторяйте пройденные уроки — мышечная память укрепляется повторением",
+                "Начните с блока «Основной ряд» и проходите уроки по порядку",
+                "Печатайте двумя большими пальцами с первого урока",
+                "Сначала точность: без ошибок, и только потом быстрее",
+                "15 минут в день лучше, чем час раз в неделю",
+                "Повторяйте пройденные уроки — пальцы запоминают движения",
                 "Следите за серией 🔥 — ежедневная практика даёт лучший результат"
             )
 
-            advice.forEachIndexed { idx, tip ->
-                Row(
-                    modifier = Modifier.padding(vertical = 3.dp)
-                ) {
+            advice.forEach { tip ->
+                Row(modifier = Modifier.padding(vertical = 3.dp)) {
                     Icon(
                         Icons.Default.CheckCircle,
                         contentDescription = null,

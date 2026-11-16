@@ -58,7 +58,7 @@ object Achievements {
         Achievement(
             id = "home_row_done",
             emoji = "🏠",
-            title = "Домашний ряд",
+            title = "Основной ряд",
             description = "Пройти все уроки основного ряда"
         ),
         Achievement(
