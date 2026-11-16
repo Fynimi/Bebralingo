@@ -37,13 +37,13 @@ import com.bebralingo.ui.theme.*
 import kotlinx.coroutines.delay
 
 /**
- * Экран тренировки — основной геймплей.
+ * Р­РєСЂР°РЅ С‚СЂРµРЅРёСЂРѕРІРєРё вЂ” РѕСЃРЅРѕРІРЅРѕР№ РіРµР№РјРїР»РµР№.
  *
- * Отображает целевой текст с посимвольной подсветкой,
- * принимает ввод через скрытое поле BasicTextField,
- * поддерживает аппаратные (OTG/Bluetooth) и системные экранные клавиатуры,
- * показывает CPM и точность в реальном времени,
- * а при завершении — эффектный оверлей с конфетти.
+ * РћС‚РѕР±СЂР°Р¶Р°РµС‚ С†РµР»РµРІРѕР№ С‚РµРєСЃС‚ СЃ РїРѕСЃРёРјРІРѕР»СЊРЅРѕР№ РїРѕРґСЃРІРµС‚РєРѕР№,
+ * РїСЂРёРЅРёРјР°РµС‚ РІРІРѕРґ С‡РµСЂРµР· СЃРєСЂС‹С‚РѕРµ РїРѕР»Рµ BasicTextField,
+ * РїРѕРґРґРµСЂР¶РёРІР°РµС‚ Р°РїРїР°СЂР°С‚РЅС‹Рµ (OTG/Bluetooth) Рё СЃРёСЃС‚РµРјРЅС‹Рµ СЌРєСЂР°РЅРЅС‹Рµ РєР»Р°РІРёР°С‚СѓСЂС‹,
+ * РїРѕРєР°Р·С‹РІР°РµС‚ CPM Рё С‚РѕС‡РЅРѕСЃС‚СЊ РІ СЂРµР°Р»СЊРЅРѕРј РІСЂРµРјРµРЅРё,
+ * Р° РїСЂРё Р·Р°РІРµСЂС€РµРЅРёРё вЂ” СЌС„С„РµРєС‚РЅС‹Р№ РѕРІРµСЂР»РµР№ СЃ РєРѕРЅС„РµС‚С‚Рё.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,6 +77,12 @@ fun TrainingScreen(
         keyboardController?.show()
     }
 
+    LaunchedEffect(state.finished) {
+        if (state.finished) {
+            keyboardController?.hide()
+        }
+    }
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -94,7 +100,7 @@ fun TrainingScreen(
                     }) {
                         Icon(
                             Icons.Default.Close,
-                            contentDescription = "Закрыть",
+                            contentDescription = "Р—Р°РєСЂС‹С‚СЊ",
                             tint = TextSecondary
                         )
                     }
@@ -113,15 +119,15 @@ fun TrainingScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         StatChip(
-                            emoji = "⚡",
+                            emoji = "вљЎ",
                             value = "${state.liveStats.cpm}",
-                            label = "зн/мин",
+                            label = "Р·РЅ/РјРёРЅ",
                             color = Blue
                         )
                         StatChip(
-                            emoji = "🎯",
+                            emoji = "рџЋЇ",
                             value = "${state.liveStats.accuracy.toInt()}%",
-                            label = "Точность",
+                            label = "РўРѕС‡РЅРѕСЃС‚СЊ",
                             color = Green
                         )
                     }
@@ -145,10 +151,11 @@ fun TrainingScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 16.dp),
+                    .verticalScroll(rememberScrollState())
+                    .padding(top = 16.dp, bottom = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Карточка с названием и подсказкой
+                // РљР°СЂС‚РѕС‡РєР° СЃ РЅР°Р·РІР°РЅРёРµРј Рё РїРѕРґСЃРєР°Р·РєРѕР№
                 if (state.lessonTitle.isNotEmpty()) {
                     Text(
                         text = state.lessonTitle,
@@ -158,7 +165,7 @@ fun TrainingScreen(
                     )
                 }
 
-                // Рендеринг целевого текста по символам
+                // Р РµРЅРґРµСЂРёРЅРі С†РµР»РµРІРѕРіРѕ С‚РµРєСЃС‚Р° РїРѕ СЃРёРјРІРѕР»Р°Рј
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -168,23 +175,24 @@ fun TrainingScreen(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                     )
                 ) {
-                    TargetTextDisplay(
+                    TypingTextDisplay(
                         target = state.target,
                         typed = state.typed,
+                        fontSize = 24.sp,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(20.dp)
                     )
                 }
 
-                // Поле ввода (работает с экранной и физической OTG/Bluetooth клавиатурой)
+                // РџРѕР»Рµ РІРІРѕРґР° (СЂР°Р±РѕС‚Р°РµС‚ СЃ СЌРєСЂР°РЅРЅРѕР№ Рё С„РёР·РёС‡РµСЃРєРѕР№ OTG/Bluetooth РєР»Р°РІРёР°С‚СѓСЂРѕР№)
                 if (!state.finished) {
                     BasicTextField(
                         value = state.typed,
                         onValueChange = { viewModel.onTextChange(it) },
                         keyboardOptions = KeyboardOptions(
                             capitalization = KeyboardCapitalization.None,
-                            autoCorrect = false
+                            autoCorrectEnabled = false
                         ),
                         textStyle = TextStyle(
                             color = Color.Transparent,
@@ -201,7 +209,7 @@ fun TrainingScreen(
                 if (!state.started && !state.finished) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Начните печать на клавиатуре ⌨️",
+                        text = "РќР°С‡РЅРёС‚Рµ РїРµС‡Р°С‚СЊ РЅР° РєР»Р°РІРёР°С‚СѓСЂРµ вЊЁпёЏ",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold,
                         color = Green
@@ -209,7 +217,7 @@ fun TrainingScreen(
                 }
             }
 
-            // Оверлей завершения
+            // РћРІРµСЂР»РµР№ Р·Р°РІРµСЂС€РµРЅРёСЏ
             AnimatedVisibility(visible = state.finished && state.result != null) {
                 state.result?.let { res ->
                     CompletionOverlay(
@@ -221,128 +229,6 @@ fun TrainingScreen(
                 }
             }
         }
-    }
-}
-
-/**
- * Отображает целевой текст по символам:
- * - Зелёный фон — правильно набранный
- * - Красный фон — ошибка
- * - Оранжевая рамка/курсор — текущий символ
- * - Серый — ожидающий
- */
-@Composable
-private fun TargetTextDisplay(
-    target: String,
-    typed: String,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        val words = target.split(" ")
-        var currentGlobalIdx = 0
-
-        val lineCharLimit = 22
-        var currentLineChars = 0
-        var currentLineWords = mutableListOf<String>()
-        val linesOfWords = mutableListOf<List<String>>()
-
-        for (word in words) {
-            val len = word.length + 1
-            if (currentLineChars + len > lineCharLimit && currentLineWords.isNotEmpty()) {
-                linesOfWords.add(currentLineWords)
-                currentLineWords = mutableListOf(word)
-                currentLineChars = len
-            } else {
-                currentLineWords.add(word)
-                currentLineChars += len
-            }
-        }
-        if (currentLineWords.isNotEmpty()) {
-            linesOfWords.add(currentLineWords)
-        }
-
-        var charTracker = 0
-        linesOfWords.forEachIndexed { lineIdx, lineWords ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                lineWords.forEachIndexed { wordIdx, word ->
-                    word.forEach { char ->
-                        val globalIdx = charTracker
-                        TargetChar(
-                            char = char,
-                            isTyped = globalIdx < typed.length,
-                            isCorrect = globalIdx < typed.length && typed[globalIdx] == char,
-                            isCurrent = globalIdx == typed.length
-                        )
-                        charTracker++
-                    }
-
-                    // Пробел между словами (если не последнее слово в последней строке)
-                    if (charTracker < target.length && target[charTracker] == ' ') {
-                        val globalIdx = charTracker
-                        TargetChar(
-                            char = ' ',
-                            isTyped = globalIdx < typed.length,
-                            isCorrect = globalIdx < typed.length && typed[globalIdx] == ' ',
-                            isCurrent = globalIdx == typed.length
-                        )
-                        charTracker++
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun TargetChar(
-    char: Char,
-    isTyped: Boolean,
-    isCorrect: Boolean,
-    isCurrent: Boolean
-) {
-    val bgColor = when {
-        isTyped && isCorrect -> Green.copy(alpha = 0.22f)
-        isTyped && !isCorrect -> Red.copy(alpha = 0.25f)
-        isCurrent -> Orange.copy(alpha = 0.35f)
-        else -> Color.Transparent
-    }
-
-    val textColor = when {
-        isTyped && isCorrect -> GreenDark
-        isTyped && !isCorrect -> RedDark
-        isCurrent -> TextPrimary
-        else -> TextLight
-    }
-
-    val borderModifier = if (isCurrent) {
-        Modifier.border(2.dp, Orange, RoundedCornerShape(6.dp))
-    } else Modifier
-
-    Box(
-        modifier = Modifier
-            .padding(horizontal = 2.dp, vertical = 2.dp)
-            .clip(RoundedCornerShape(6.dp))
-            .background(bgColor)
-            .then(borderModifier)
-            .padding(horizontal = 4.dp, vertical = 2.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = if (char == ' ') "␣" else char.toString(),
-            fontSize = 24.sp,
-            fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.Bold,
-            color = textColor
-        )
     }
 }
 
@@ -370,7 +256,7 @@ private fun CompletionOverlay(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Урок пройден! 🎉",
+                text = "РЈСЂРѕРє РїСЂРѕР№РґРµРЅ! рџЋ‰",
                 style = MaterialTheme.typography.displayMedium,
                 color = Green,
                 fontWeight = FontWeight.Bold
@@ -392,21 +278,21 @@ private fun CompletionOverlay(
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 StatChip(
-                    emoji = "⚡",
+                    emoji = "вљЎ",
                     value = "${result.cpm}",
-                    label = "зн/мин",
+                    label = "Р·РЅ/РјРёРЅ",
                     color = Blue
                 )
                 StatChip(
-                    emoji = "🎯",
+                    emoji = "рџЋЇ",
                     value = "${result.accuracy.toInt()}%",
-                    label = "Точность",
+                    label = "РўРѕС‡РЅРѕСЃС‚СЊ",
                     color = Green
                 )
                 StatChip(
-                    emoji = if (result.isPerfect) "💎" else "❌",
+                    emoji = if (result.isPerfect) "рџ’Ћ" else "вќЊ",
                     value = if (result.isPerfect) "0" else result.errorCount.toString(),
-                    label = "Ошибки",
+                    label = "РћС€РёР±РєРё",
                     color = if (result.isPerfect) Purple else Red
                 )
             }
@@ -414,7 +300,7 @@ private fun CompletionOverlay(
             Spacer(modifier = Modifier.height(Dim.gapLarge))
 
             SolidButton(
-                text = "Продолжить",
+                text = "РџСЂРѕРґРѕР»Р¶РёС‚СЊ",
                 onClick = onContinue,
                 color = Green
             )

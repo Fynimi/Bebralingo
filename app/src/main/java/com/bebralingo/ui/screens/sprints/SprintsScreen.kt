@@ -34,11 +34,11 @@ import com.bebralingo.ui.theme.Dim
 import kotlinx.coroutines.delay
 
 /**
- * Экран спринтов — испытания на скорость (30с, 1мин, 3мин).
+ * Р­РєСЂР°РЅ СЃРїСЂРёРЅС‚РѕРІ вЂ” РёСЃРїС‹С‚Р°РЅРёСЏ РЅР° СЃРєРѕСЂРѕСЃС‚СЊ (30СЃ, 1РјРёРЅ, 3РјРёРЅ).
  *
- * В режиме ожидания: карточки выбора длительности + рекорды + достижения.
- * В режиме бега: таймер обратного отсчёта, живые CPM, посимвольное поле ввода,
- * после окончания — диалоговая карточка результатов.
+ * Р’ СЂРµР¶РёРјРµ РѕР¶РёРґР°РЅРёСЏ: РєР°СЂС‚РѕС‡РєРё РІС‹Р±РѕСЂР° РґР»РёС‚РµР»СЊРЅРѕСЃС‚Рё + СЂРµРєРѕСЂРґС‹ + РґРѕСЃС‚РёР¶РµРЅРёСЏ.
+ * Р’ СЂРµР¶РёРјРµ Р±РµРіР°: С‚Р°Р№РјРµСЂ РѕР±СЂР°С‚РЅРѕРіРѕ РѕС‚СЃС‡С‘С‚Р°, Р¶РёРІС‹Рµ CPM, РїРѕСЃРёРјРІРѕР»СЊРЅРѕРµ РїРѕР»Рµ РІРІРѕРґР°,
+ * РїРѕСЃР»Рµ РѕРєРѕРЅС‡Р°РЅРёСЏ вЂ” РґРёР°Р»РѕРіРѕРІР°СЏ РєР°СЂС‚РѕС‡РєР° СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,7 +54,7 @@ fun SprintsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Спринты на скорость",
+                        text = "РЎРїСЂРёРЅС‚С‹ РЅР° СЃРєРѕСЂРѕСЃС‚СЊ",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -70,13 +70,13 @@ fun SprintsScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (state.isRunning || state.finished) {
-                // --- Режим бега / Результаты ---
+                // --- Р РµР¶РёРј Р±РµРіР° / Р РµР·СѓР»СЊС‚Р°С‚С‹ ---
                 RunningSprint(
                     state = state,
                     viewModel = viewModel
                 )
             } else {
-                // --- Режим ожидания ---
+                // --- Р РµР¶РёРј РѕР¶РёРґР°РЅРёСЏ ---
                 WaitingSprint(
                     state = state,
                     viewModel = viewModel
@@ -102,6 +102,12 @@ private fun RunningSprint(
         }
     }
 
+    LaunchedEffect(state.finished) {
+        if (state.finished) {
+            keyboardController?.hide()
+        }
+    }
+
     val timerColor = when {
         state.remainingSeconds > 10 -> Green
         state.remainingSeconds > 5 -> Orange
@@ -121,10 +127,11 @@ private fun RunningSprint(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 16.dp),
+                .verticalScroll(rememberScrollState())
+                .padding(top = 16.dp, bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Верхняя плашка таймера и CPM
+            // Р’РµСЂС…РЅСЏСЏ РїР»Р°С€РєР° С‚Р°Р№РјРµСЂР° Рё CPM
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -133,22 +140,22 @@ private fun RunningSprint(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 StatChip(
-                    emoji = "⏱",
-                    value = "${state.remainingSeconds}с",
-                    label = "Осталось",
+                    emoji = "вЏ±",
+                    value = "${state.remainingSeconds}СЃ",
+                    label = "РћСЃС‚Р°Р»РѕСЃСЊ",
                     color = timerColor
                 )
                 StatChip(
-                    emoji = "⚡",
+                    emoji = "вљЎ",
                     value = "${state.liveCpm}",
-                    label = "зн/мин",
+                    label = "Р·РЅ/РјРёРЅ",
                     color = Blue
                 )
             }
 
             Spacer(modifier = Modifier.height(Dim.gapMedium))
 
-            // Текущий текст задания
+            // РўРµРєСѓС‰РёР№ С‚РµРєСЃС‚ Р·Р°РґР°РЅРёСЏ
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -158,9 +165,10 @@ private fun RunningSprint(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                 )
             ) {
-                SprintTextDisplay(
+                TypingTextDisplay(
                     target = state.currentText,
                     typed = state.typedText,
+                    fontSize = 22.sp,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(20.dp)
@@ -169,14 +177,14 @@ private fun RunningSprint(
 
             Spacer(modifier = Modifier.height(Dim.gapLarge))
 
-            // Поле ввода
+            // РџРѕР»Рµ РІРІРѕРґР°
             if (state.isRunning) {
                 BasicTextField(
                     value = state.typedText,
                     onValueChange = { viewModel.onTextChange(it) },
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.None,
-                        autoCorrect = false
+                        autoCorrectEnabled = false
                     ),
                     textStyle = TextStyle(
                         color = Color.Transparent,
@@ -191,7 +199,7 @@ private fun RunningSprint(
             }
         }
 
-        // Диалог завершения спринта
+        // Р”РёР°Р»РѕРі Р·Р°РІРµСЂС€РµРЅРёСЏ СЃРїСЂРёРЅС‚Р°
         AnimatedVisibility(visible = state.finished && state.result != null) {
             state.result?.let { result ->
                 Box(
@@ -218,76 +226,6 @@ private fun RunningSprint(
 }
 
 @Composable
-private fun SprintTextDisplay(
-    target: String,
-    typed: String,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        val lines = target.chunked(22)
-        var globalIdxTracker = 0
-
-        lines.forEach { line ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                line.forEach { char ->
-                    val globalIdx = globalIdxTracker
-                    val isTyped = globalIdx < typed.length
-                    val isCorrect = isTyped && typed[globalIdx] == char
-                    val isCurrent = globalIdx == typed.length
-
-                    val bgColor = when {
-                        isTyped && isCorrect -> Green.copy(alpha = 0.22f)
-                        isTyped && !isCorrect -> Red.copy(alpha = 0.25f)
-                        isCurrent -> Orange.copy(alpha = 0.35f)
-                        else -> Color.Transparent
-                    }
-
-                    val textColor = when {
-                        isTyped && isCorrect -> GreenDark
-                        isTyped && !isCorrect -> RedDark
-                        isCurrent -> TextPrimary
-                        else -> TextLight
-                    }
-
-                    val borderModifier = if (isCurrent) {
-                        Modifier.border(2.dp, Orange, RoundedCornerShape(6.dp))
-                    } else Modifier
-
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 2.dp)
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(bgColor)
-                            .then(borderModifier)
-                            .padding(horizontal = 4.dp, vertical = 2.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = if (char == ' ') "␣" else char.toString(),
-                            fontSize = 22.sp,
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Bold,
-                            color = textColor
-                        )
-                    }
-
-                    globalIdxTracker++
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun WaitingSprint(
     state: SprintsState,
     viewModel: SprintsViewModel
@@ -303,7 +241,7 @@ private fun WaitingSprint(
     ) {
         Spacer(modifier = Modifier.height(Dim.gapMedium))
 
-        // Заголовок карточки
+        // Р—Р°РіРѕР»РѕРІРѕРє РєР°СЂС‚РѕС‡РєРё
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(Dim.cornerMedium),
@@ -314,14 +252,14 @@ private fun WaitingSprint(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "⏱ Испытание на скорость",
+                    text = "вЏ± РСЃРїС‹С‚Р°РЅРёРµ РЅР° СЃРєРѕСЂРѕСЃС‚СЊ",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = Blue
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Печатайте случайные тексты на время и побивайте личные рекорды!",
+                    text = "РџРµС‡Р°С‚Р°Р№С‚Рµ СЃР»СѓС‡Р°Р№РЅС‹Рµ С‚РµРєСЃС‚С‹ РЅР° РІСЂРµРјСЏ Рё РїРѕР±РёРІР°Р№С‚Рµ Р»РёС‡РЅС‹Рµ СЂРµРєРѕСЂРґС‹!",
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSecondary
                 )
@@ -330,9 +268,9 @@ private fun WaitingSprint(
 
         Spacer(modifier = Modifier.height(Dim.gapLarge))
 
-        // Выбор режима
+        // Р’С‹Р±РѕСЂ СЂРµР¶РёРјР°
         Text(
-            text = "Выберите длительность",
+            text = "Р’С‹Р±РµСЂРёС‚Рµ РґР»РёС‚РµР»СЊРЅРѕСЃС‚СЊ",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = TextPrimary
@@ -354,10 +292,10 @@ private fun WaitingSprint(
 
         Spacer(modifier = Modifier.height(Dim.gapLarge))
 
-        // Кнопка старта
+        // РљРЅРѕРїРєР° СЃС‚Р°СЂС‚Р°
         if (state.selectedMode != null) {
             SolidButton(
-                text = "Начать спринт (${state.selectedMode.seconds} сек)",
+                text = "РќР°С‡Р°С‚СЊ СЃРїСЂРёРЅС‚ (${state.selectedMode.seconds} СЃРµРє)",
                 onClick = { viewModel.startSprint() },
                 color = Orange
             )
@@ -365,22 +303,22 @@ private fun WaitingSprint(
 
         Spacer(modifier = Modifier.height(Dim.gapLarge))
 
-        // Рекорд
+        // Р РµРєРѕСЂРґ
         val bestCpm by viewModel.bestSprintCpm.collectAsState()
         if (bestCpm > 0) {
             StatChip(
-                emoji = "🏆",
-                value = "$bestCpm зн/мин",
-                label = "Личный рекорд CPM",
+                emoji = "рџЏ†",
+                value = "$bestCpm Р·РЅ/РјРёРЅ",
+                label = "Р›РёС‡РЅС‹Р№ СЂРµРєРѕСЂРґ CPM",
                 color = Gold
             )
             Spacer(modifier = Modifier.height(Dim.gapLarge))
         }
 
-        // Достижения
+        // Р”РѕСЃС‚РёР¶РµРЅРёСЏ
         val achievements = Achievements.ALL
         Text(
-            text = "🏆 Достижения",
+            text = "рџЏ† Р”РѕСЃС‚РёР¶РµРЅРёСЏ",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = TextPrimary
@@ -402,7 +340,7 @@ private fun WaitingSprint(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (isUnlocked) ach.emoji else "🔒",
+                    text = if (isUnlocked) ach.emoji else "рџ”’",
                     fontSize = 24.sp,
                     modifier = Modifier.alpha(if (isUnlocked) 1f else 0.5f)
                 )
@@ -443,7 +381,7 @@ private fun SprintModeCard(
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = mode.seconds.toString(), style = MaterialTheme.typography.displayMedium, color = TextPrimary, fontWeight = FontWeight.Bold)
-            Text(text = "секунд", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
+            Text(text = "СЃРµРєСѓРЅРґ", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
         }
     }
 }
@@ -464,7 +402,7 @@ private fun SprintResultCard(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Время вышло! ⏱",
+            text = "Р’СЂРµРјСЏ РІС‹С€Р»Рѕ! вЏ±",
             style = MaterialTheme.typography.displayMedium,
             color = Orange,
             fontWeight = FontWeight.Bold
@@ -480,7 +418,7 @@ private fun SprintResultCard(
                     Text(text = ach.emoji, fontSize = 20.sp)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Новое достижение: ${ach.title}",
+                        text = "РќРѕРІРѕРµ РґРѕСЃС‚РёР¶РµРЅРёРµ: ${ach.title}",
                         style = MaterialTheme.typography.bodySmall,
                         color = GreenDark,
                         fontWeight = FontWeight.Bold
@@ -496,21 +434,21 @@ private fun SprintResultCard(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             StatChip(
-                emoji = "⚡",
+                emoji = "вљЎ",
                 value = "${result.cpm}",
-                label = "зн/мин",
+                label = "Р·РЅ/РјРёРЅ",
                 color = Blue
             )
             StatChip(
-                emoji = "🎯",
+                emoji = "рџЋЇ",
                 value = "${result.accuracy.toInt()}%",
-                label = "Точность",
+                label = "РўРѕС‡РЅРѕСЃС‚СЊ",
                 color = Green
             )
             StatChip(
-                emoji = if (result.isPerfect) "💎" else "❌",
+                emoji = if (result.isPerfect) "рџ’Ћ" else "вќЊ",
                 value = "${result.errorCount}",
-                label = "Ошибки",
+                label = "РћС€РёР±РєРё",
                 color = if (result.isPerfect) Purple else Red
             )
         }
@@ -523,14 +461,14 @@ private fun SprintResultCard(
         ) {
             Box(modifier = Modifier.weight(1f)) {
                 SolidButton(
-                    text = "Ещё раз",
+                    text = "Р•С‰С‘ СЂР°Р·",
                     onClick = onAgain,
                     color = Orange
                 )
             }
             Box(modifier = Modifier.weight(1f)) {
                 SolidButton(
-                    text = "Готово",
+                    text = "Р“РѕС‚РѕРІРѕ",
                     onClick = onDone,
                     color = Green
                 )

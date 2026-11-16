@@ -144,8 +144,9 @@ class SprintsViewModel(private val store: AppDataStore) : ViewModel() {
         val elapsedMinutes = elapsedMs / 60000.0
         val cpm = if (elapsedMinutes > 0) (totalCorrect / elapsedMinutes).toInt() else 0
 
-        // Если текущее предложение полностью и правильно набрано — переходим к следующему
-        if (typed.length >= target.length && typed == target) {
+        // Если текст набран до конца (даже с ошибками) — переходим к следующему:
+        // иначе на неверном последнем символе ввод упирается в ограничение длины
+        if (typed.length >= target.length) {
             accumulatedCorrect += currentSentenceCorrect
             accumulatedTyped += typed.length
             accumulatedErrors += currentSentenceErrors
