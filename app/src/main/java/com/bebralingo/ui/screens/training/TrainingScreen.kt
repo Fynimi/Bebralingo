@@ -37,19 +37,20 @@ import com.bebralingo.ui.theme.*
 import kotlinx.coroutines.delay
 
 /**
- * Р­РєСЂР°РЅ С‚СЂРµРЅРёСЂРѕРІРєРё вЂ” РѕСЃРЅРѕРІРЅРѕР№ РіРµР№РјРїР»РµР№.
+ * Экран тренировки — основной геймплей.
  *
- * РћС‚РѕР±СЂР°Р¶Р°РµС‚ С†РµР»РµРІРѕР№ С‚РµРєСЃС‚ СЃ РїРѕСЃРёРјРІРѕР»СЊРЅРѕР№ РїРѕРґСЃРІРµС‚РєРѕР№,
- * РїСЂРёРЅРёРјР°РµС‚ РІРІРѕРґ С‡РµСЂРµР· СЃРєСЂС‹С‚РѕРµ РїРѕР»Рµ BasicTextField,
- * РїРѕРґРґРµСЂР¶РёРІР°РµС‚ Р°РїРїР°СЂР°С‚РЅС‹Рµ (OTG/Bluetooth) Рё СЃРёСЃС‚РµРјРЅС‹Рµ СЌРєСЂР°РЅРЅС‹Рµ РєР»Р°РІРёР°С‚СѓСЂС‹,
- * РїРѕРєР°Р·С‹РІР°РµС‚ CPM Рё С‚РѕС‡РЅРѕСЃС‚СЊ РІ СЂРµР°Р»СЊРЅРѕРј РІСЂРµРјРµРЅРё,
- * Р° РїСЂРё Р·Р°РІРµСЂС€РµРЅРёРё вЂ” СЌС„С„РµРєС‚РЅС‹Р№ РѕРІРµСЂР»РµР№ СЃ РєРѕРЅС„РµС‚С‚Рё.
+ * Отображает целевой текст с посимвольной подсветкой,
+ * принимает ввод через скрытое поле BasicTextField,
+ * поддерживает аппаратные (OTG/Bluetooth) и системные экранные клавиатуры,
+ * показывает CPM и точность в реальном времени,
+ * а при завершении — эффектный оверлей с конфетти.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrainingScreen(
     viewModel: TrainingViewModel,
     onClose: () -> Unit,
+    onContinue: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsState()
@@ -100,7 +101,7 @@ fun TrainingScreen(
                     }) {
                         Icon(
                             Icons.Default.Close,
-                            contentDescription = "Р—Р°РєСЂС‹С‚СЊ",
+                            contentDescription = "Закрыть",
                             tint = TextSecondary
                         )
                     }
@@ -119,15 +120,15 @@ fun TrainingScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         StatChip(
-                            emoji = "вљЎ",
+                            emoji = "⚡",
                             value = "${state.liveStats.cpm}",
-                            label = "Р·РЅ/РјРёРЅ",
+                            label = "зн/мин",
                             color = Blue
                         )
                         StatChip(
-                            emoji = "рџЋЇ",
+                            emoji = "🎯",
                             value = "${state.liveStats.accuracy.toInt()}%",
-                            label = "РўРѕС‡РЅРѕСЃС‚СЊ",
+                            label = "Точность",
                             color = Green
                         )
                     }
@@ -155,7 +156,7 @@ fun TrainingScreen(
                     .padding(top = 16.dp, bottom = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // РљР°СЂС‚РѕС‡РєР° СЃ РЅР°Р·РІР°РЅРёРµРј Рё РїРѕРґСЃРєР°Р·РєРѕР№
+                // Карточка с названием и подсказкой
                 if (state.lessonTitle.isNotEmpty()) {
                     Text(
                         text = state.lessonTitle,
@@ -165,7 +166,7 @@ fun TrainingScreen(
                     )
                 }
 
-                // Р РµРЅРґРµСЂРёРЅРі С†РµР»РµРІРѕРіРѕ С‚РµРєСЃС‚Р° РїРѕ СЃРёРјРІРѕР»Р°Рј
+                // Рендеринг целевого текста по символам
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -185,14 +186,14 @@ fun TrainingScreen(
                     )
                 }
 
-                // РџРѕР»Рµ РІРІРѕРґР° (СЂР°Р±РѕС‚Р°РµС‚ СЃ СЌРєСЂР°РЅРЅРѕР№ Рё С„РёР·РёС‡РµСЃРєРѕР№ OTG/Bluetooth РєР»Р°РІРёР°С‚СѓСЂРѕР№)
+                // Поле ввода (работает с экранной и физической OTG/Bluetooth клавиатурой)
                 if (!state.finished) {
                     BasicTextField(
                         value = state.typed,
                         onValueChange = { viewModel.onTextChange(it) },
                         keyboardOptions = KeyboardOptions(
                             capitalization = KeyboardCapitalization.None,
-                            autoCorrectEnabled = false
+                            autoCorrect = false
                         ),
                         textStyle = TextStyle(
                             color = Color.Transparent,
@@ -209,7 +210,7 @@ fun TrainingScreen(
                 if (!state.started && !state.finished) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "РќР°С‡РЅРёС‚Рµ РїРµС‡Р°С‚СЊ РЅР° РєР»Р°РІРёР°С‚СѓСЂРµ вЊЁпёЏ",
+                        text = "Начните печать на клавиатуре ⌨️",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold,
                         color = Green
@@ -217,13 +218,14 @@ fun TrainingScreen(
                 }
             }
 
-            // РћРІРµСЂР»РµР№ Р·Р°РІРµСЂС€РµРЅРёСЏ
+            // Оверлей завершения
             AnimatedVisibility(visible = state.finished && state.result != null) {
                 state.result?.let { res ->
                     CompletionOverlay(
                         result = res,
                         lessonTitle = state.lessonTitle,
-                        onContinue = onClose,
+                        onNextLesson = onContinue,
+                        onExit = onClose,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
@@ -236,7 +238,8 @@ fun TrainingScreen(
 private fun CompletionOverlay(
     result: TrainingResult,
     lessonTitle: String = "",
-    onContinue: () -> Unit,
+    onNextLesson: () -> Unit = {},
+    onExit: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -247,63 +250,78 @@ private fun CompletionOverlay(
 
         Column(
             modifier = Modifier
-                .align(Alignment.Center)
-                .fillMaxWidth(0.9f)
-                .padding(horizontal = Dim.paddingMedium)
-                .clip(RoundedCornerShape(Dim.cornerMedium))
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(Dim.paddingLarge),
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(Dim.paddingMedium),
+            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "РЈСЂРѕРє РїСЂРѕР№РґРµРЅ! рџЋ‰",
-                style = MaterialTheme.typography.displayMedium,
-                color = Green,
-                fontWeight = FontWeight.Bold
-            )
-            if (lessonTitle.isNotEmpty()) {
-                Text(
-                    text = lessonTitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
-                )
-            }
-            Spacer(modifier = Modifier.height(Dim.gapMedium))
-
-            XpBadge(xp = result.xpGained, color = Gold)
-            Spacer(modifier = Modifier.height(Dim.gapMedium))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(Dim.cornerMedium))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(Dim.paddingLarge),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                StatChip(
-                    emoji = "вљЎ",
-                    value = "${result.cpm}",
-                    label = "Р·РЅ/РјРёРЅ",
-                    color = Blue
+                Text(
+                    text = "Урок пройден! 🎉",
+                    style = MaterialTheme.typography.displayMedium,
+                    color = Green,
+                    fontWeight = FontWeight.Bold
                 )
-                StatChip(
-                    emoji = "рџЋЇ",
-                    value = "${result.accuracy.toInt()}%",
-                    label = "РўРѕС‡РЅРѕСЃС‚СЊ",
+                if (lessonTitle.isNotEmpty()) {
+                    Text(
+                        text = lessonTitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
+                    )
+                }
+                Spacer(modifier = Modifier.height(Dim.gapMedium))
+
+                XpBadge(xp = result.xpGained, color = Gold)
+                Spacer(modifier = Modifier.height(Dim.gapMedium))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    StatChip(
+                        emoji = "⚡",
+                        value = "${result.cpm}",
+                        label = "зн/мин",
+                        color = Blue
+                    )
+                    StatChip(
+                        emoji = "🎯",
+                        value = "${result.accuracy.toInt()}%",
+                        label = "Точность",
+                        color = Green
+                    )
+                    StatChip(
+                        emoji = if (result.isPerfect) "💎" else "❌",
+                        value = if (result.isPerfect) "0" else result.errorCount.toString(),
+                        label = "Ошибки",
+                        color = if (result.isPerfect) Purple else Red
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(Dim.gapLarge))
+
+                SolidButton(
+                    text = "Продолжить",
+                    onClick = onNextLesson,
                     color = Green
                 )
-                StatChip(
-                    emoji = if (result.isPerfect) "рџ’Ћ" else "вќЊ",
-                    value = if (result.isPerfect) "0" else result.errorCount.toString(),
-                    label = "РћС€РёР±РєРё",
-                    color = if (result.isPerfect) Purple else Red
-                )
+                Spacer(modifier = Modifier.height(Dim.gapSmall))
+                TextButton(onClick = onExit) {
+                    Text(
+                        text = "В меню",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = TextSecondary
+                    )
+                }
             }
-
-            Spacer(modifier = Modifier.height(Dim.gapLarge))
-
-            SolidButton(
-                text = "РџСЂРѕРґРѕР»Р¶РёС‚СЊ",
-                onClick = onContinue,
-                color = Green
-            )
         }
     }
 }

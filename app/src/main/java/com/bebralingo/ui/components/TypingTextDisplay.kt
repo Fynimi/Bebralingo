@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,8 +17,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -32,21 +34,21 @@ import com.bebralingo.ui.theme.Red
 import com.bebralingo.ui.theme.RedDark
 import com.bebralingo.ui.theme.TextLight
 import com.bebralingo.ui.theme.TextPrimary
+import kotlin.math.max
 
 /**
  * Целевой текст для набора с посимвольной подсветкой.
  *
- * Ширина строки не задаётся числом символов: слова переносятся по фактической
- * ширине экрана через [FlowRow], поэтому текст никогда не уезжает за границы,
- * а на узких экранах и при увеличенном системном шрифте размер символов
- * уменьшается автоматически.
+ * Размер шрифта постоянный; число символов в строке вычисляется по фактической
+ * ширине карточки и реальной ширине моноширинного символа, поэтому текст
+ * не выходит за границы экрана и не «прыгает» при смене устройства.
+ * Перенос — по словам, слишком длинное слово дробится по символам.
  *
  * @param target текст, который нужно напечатать
  * @param typed уже введённый текст
- * @param fontSize базовый размер символа
+ * @param fontSize размер символа
  * @param cellPadding горизонтальный отступ внутри ячейки символа
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TypingTextDisplay(
     target: String,
@@ -55,27 +57,47 @@ fun TypingTextDisplay(
     fontSize: TextUnit = 24.sp,
     cellPadding: Dp = 4.dp
 ) {
-    val words = remember(target) { splitWords(target) }
+    if (target.isEmpty()) return
 
     BoxWithConstraints(modifier = modifier) {
-        val compact = maxWidth < 340.dp
-        val adaptedFontSize = if (compact) fontSize * 0.85f else fontSize
-        val adaptedPadding = if (compact) 3.dp else cellPadding
+        val density = LocalDensity.current
+        val measurer = rememberTextMeasurer()
 
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalArrangement = Arrangement.Center
-        ) {
-            words.forEach { word ->
-                Row {
-                    word.text.forEachIndexed { offset, char ->
+        val sampleStyle = TextStyle(
+            fontSize = fontSize,
+            fontFamily = FontFamily.Monospace,
+            fontWeight = FontWeight.Bold
+        )
+
+        val maxChars = remember(fontSize, cellPadding, constraints.maxWidth, density) {
+            val charWidthPx = measurer.measure("Ш", sampleStyle).size.width.toFloat()
+            val paddingsPx = with(density) { (4.dp + cellPadding * 2).toPx() }
+            val cellWidthPx = charWidthPx + paddingsPx
+            if (constraints.maxWidth == Constraints.Infinity || cellWidthPx <= 0f) {
+                24
+            } else {
+                max(4, (constraints.maxWidth / cellWidthPx).toInt())
+            }
+        }
+
+        val lines = remember(target, maxChars) { wrapIndices(target, maxChars) }
+
+        Column(modifier = Modifier.fillMaxWidth()) {
+            lines.forEach { range ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    for (index in range) {
                         TypingChar(
-                            char = char,
-                            globalIndex = word.startIndex + offset,
+                            char = target[index],
+                            globalIndex = index,
                             typed = typed,
-                            fontSize = adaptedFontSize,
-                            cellPadding = adaptedPadding
+                            fontSize = fontSize,
+                            cellPadding = cellPadding
                         )
                     }
                 }
@@ -85,30 +107,26 @@ fun TypingTextDisplay(
 }
 
 /**
- * Слово с позицией первого символа в общем тексте.
- * Пробел после слова входит в это же слово, чтобы перенос не отрывал его.
+ * Разбивает текст на строки по [maxChars] символов, стараясь резать по пробелу.
+ * Возвращает диапазоны индексов символов исходной строки.
  */
-private data class WordChunk(val text: String, val startIndex: Int)
+private fun wrapIndices(target: String, maxChars: Int): List<IntRange> {
+    if (maxChars <= 0) return listOf(target.indices)
 
-private fun splitWords(target: String): List<WordChunk> {
-    if (target.isEmpty()) return emptyList()
-
-    val chunks = mutableListOf<WordChunk>()
-    var index = 0
+    val lines = mutableListOf<IntRange>()
     var start = 0
-
-    while (index <= target.length) {
-        val isEnd = index == target.length
-        val isSpace = !isEnd && target[index] == ' '
-
-        if (isEnd || isSpace) {
-            val text = target.substring(start, if (isSpace) index + 1 else index)
-            if (text.isNotEmpty()) chunks += WordChunk(text, start)
-            start = index + 1
+    while (start < target.length) {
+        var end = minOf(start + maxChars, target.length)
+        if (end < target.length) {
+            val lastSpace = target.lastIndexOf(' ', end - 1)
+            if (lastSpace >= start) {
+                end = lastSpace + 1
+            }
         }
-        index++
+        lines += start until end
+        start = end
     }
-    return chunks
+    return lines
 }
 
 @Composable

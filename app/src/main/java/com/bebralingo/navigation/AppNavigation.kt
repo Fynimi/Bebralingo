@@ -23,6 +23,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.bebralingo.data.AppDataStore
+import com.bebralingo.data.LessonContent
 import com.bebralingo.ui.screens.guide.GuideScreen
 import com.bebralingo.ui.screens.map.LessonMapScreen
 import com.bebralingo.ui.screens.map.MapViewModel
@@ -175,7 +176,19 @@ private fun NavGraphBuilder.trainingGraph(
         )
         TrainingScreen(
             viewModel = vm,
-            onClose = { navController.popBackStack() }
+            onClose = { navController.popBackStack() },
+            onContinue = {
+                val lessons = LessonContent.allLessons
+                val currentIndex = lessons.indexOfFirst { it.id == lessonId }
+                val next = lessons.getOrNull(currentIndex + 1)
+                if (next != null) {
+                    navController.navigate(Routes.training(next.id)) {
+                        popUpTo(Routes.MAP)
+                    }
+                } else {
+                    navController.popBackStack()
+                }
+            }
         )
     }
 }
